@@ -16,8 +16,15 @@ public class Enemy : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        enemyRb.AddForce((player.transform.position - transform.position).normalized * speed);
+        if(transform.position.y < -10)
+        {
+            Destroy(gameObject);
+        }
+
+        Vector3 lookDirection = (player.transform.position - transform.position).normalized;
+
+        enemyRb.AddForce(lookDirection * speed);
     }
 }
