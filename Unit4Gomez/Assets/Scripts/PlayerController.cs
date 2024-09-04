@@ -13,8 +13,14 @@ public class PlayerController : MonoBehaviour
 
     public bool hasPowerup;
 
-    public float speed = 5;
+    public float speed = 80;
     private float powerupStrength = 15.0f;
+
+    public PowerUpType currentPowerUp = PowerUpType.None;
+
+    public GameObject rocketPrefab;
+    private GameObject tmpRocket;
+    private Coroutine powerupCountdown;
 
     // Start is called before the first frame update
     void Start()
@@ -36,14 +42,31 @@ public class PlayerController : MonoBehaviour
         powerupIndicator.transform.position = transform.position + new Vector3(0f, -0.5f, 0f);
     }
 
+    private void Update()
+    {
+        //this doesnt work well in fixed update so its going here
+        if (currentPowerUp == PowerUpType.Rockets && Input.GetKeyDown(KeyCode.F))
+        {
+            Debug.Log("Pew");
+            LaunchRockets();
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("PowerUp"))
         {
             hasPowerup = true;
+            currentPowerUp = other.gameObject.GetComponent<PowerUp>().powerUpType;
             powerupIndicator.SetActive(true);
             Destroy(other.gameObject);
-            StartCoroutine(PowerupCountdownRoutine());
+
+            if (powerupCountdown != null)
+            {
+                Debug.Log("Powerup Timer Reset");
+                StopCoroutine(powerupCountdown);
+            }
+            powerupCountdown = StartCoroutine(PowerupCountdownRoutine());
         }
     }
 
@@ -52,17 +75,27 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(7);
         powerupIndicator.SetActive(false);
         hasPowerup = false;
+        currentPowerUp = PowerUpType.None;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Enemy") && hasPowerup)
+        if (collision.gameObject.CompareTag("Enemy") && currentPowerUp == PowerUpType.Pushback)
         {
             Rigidbody enemyRb = collision.gameObject.GetComponent<Rigidbody>();
             Vector3 awayFromPlayer = (collision.gameObject.transform.position - transform.position);
 
-            Debug.Log("Player collided with " + collision.gameObject.name + " with powerup set to " + hasPowerup);
-            enemyRb.AddForce(awayFromPlayer * powerupStrength, ForceMode.Impulse);  
+            Debug.Log("Player collided with " + collision.gameObject.name + " with powerup set to " + currentPowerUp.ToString());
+            enemyRb.AddForce(awayFromPlayer * powerupStrength, ForceMode.Impulse);
+        }
+    }
+
+    void LaunchRockets()
+    {
+        foreach(var enemy in FindObjectsOfType<Enemy>())
+        {
+            tmpRocket = Instantiate(rocketPrefab, transform.position + Vector3.up, Quaternion.identity);
+            tmpRocket.GetComponent<ProjBehavior>().Fire(enemy.transform);
         }
     }
 }

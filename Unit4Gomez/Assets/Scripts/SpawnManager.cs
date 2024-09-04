@@ -6,8 +6,8 @@ using UnityEngine;
 public class SpawnManager : MonoBehaviour
 {
     private float spawnRange = 9;
-    public GameObject[] enemyPrefab;
-    public GameObject powerupPrefab;
+    public GameObject[] enemyPrefabs;
+    public GameObject[] powerupPrefabs;
     public int enemyCount;
     public int waveCount;
 
@@ -15,7 +15,8 @@ public class SpawnManager : MonoBehaviour
     void Start()
     {
         SpawnEnemyWave(waveCount);
-        //Instantiate(powerupPrefab, GenerateSpawnPos(), powerupPrefab.transform.rotation);
+        int randomPowerUp = Random.Range(0, powerupPrefabs.Length);
+        Instantiate(powerupPrefabs[randomPowerUp], GenerateSpawnPos(), powerupPrefabs[randomPowerUp].transform.rotation);
     }
 
     // Update is called once per frame
@@ -27,7 +28,8 @@ public class SpawnManager : MonoBehaviour
         {
             waveCount++;
             SpawnEnemyWave(waveCount);
-            Instantiate(powerupPrefab, GenerateSpawnPos(), powerupPrefab.transform.rotation);
+            int randomPowerUp = Random.Range(0, powerupPrefabs.Length);
+            Instantiate(powerupPrefabs[randomPowerUp], GenerateSpawnPos(), powerupPrefabs[randomPowerUp].transform.rotation);
         }
     }
 
@@ -46,7 +48,7 @@ public class SpawnManager : MonoBehaviour
             int r = Random.Range(0, 3);
             Debug.Log(r);
             if (r >= 1) { r = 1;}
-            Instantiate(enemyPrefab[r], GenerateSpawnPos(), Quaternion.identity);
+            Instantiate(enemyPrefabs[r], GenerateSpawnPos(), Quaternion.identity);
         }
     }
 }
