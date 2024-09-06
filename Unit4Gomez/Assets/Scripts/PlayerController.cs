@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,7 +15,13 @@ public class PlayerController : MonoBehaviour
     public bool hasPowerup;
 
     public float speed = 80;
-    private float powerupStrength = 15.0f;
+    private float powerupStrength = 25.0f;
+
+    public float smashForce;
+    public float explosionForce;
+    public float jumpForce;
+    public float explosionRadius;
+    public bool jumped = false;
 
     public PowerUpType currentPowerUp = PowerUpType.None;
 
@@ -39,7 +46,7 @@ public class PlayerController : MonoBehaviour
         playerRb.AddForce(focalPoint.transform.forward * forwardInput * speed);
         playerRb.AddForce(focalPoint.transform.right * horizontalInput * speed);
 
-        powerupIndicator.transform.position = transform.position + new Vector3(0f, -0.5f, 0f);
+        
     }
 
     private void Update()
@@ -50,6 +57,15 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Pew");
             LaunchRockets();
         }
+
+        if (currentPowerUp == PowerUpType.Smash && Input.GetKeyDown(KeyCode.Space) && !jumped)
+        {
+            playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            jumped = true;
+            StartCoroutine(SmashDown());
+        }
+
+        powerupIndicator.transform.position = transform.position + new Vector3(0f, -0.5f, 0f);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -88,6 +104,20 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Player collided with " + collision.gameObject.name + " with powerup set to " + currentPowerUp.ToString());
             enemyRb.AddForce(awayFromPlayer * powerupStrength, ForceMode.Impulse);
         }
+
+        if (collision.gameObject.CompareTag("Ground") && jumped)
+        {
+
+            var enemies = FindObjectsOfType<Enemy>();
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                if (enemies[i] != null)
+                {
+                    enemies[i].GetComponent<Rigidbody>().AddExplosionForce(explosionForce, transform.position, explosionRadius, 0.0f, ForceMode.Impulse);
+                }
+            }
+            jumped = false;
+        }
     }
 
     void LaunchRockets()
@@ -97,5 +127,11 @@ public class PlayerController : MonoBehaviour
             tmpRocket = Instantiate(rocketPrefab, transform.position + Vector3.up, Quaternion.identity);
             tmpRocket.GetComponent<ProjBehavior>().Fire(enemy.transform);
         }
+    }
+
+    IEnumerator SmashDown()
+    {
+        yield return new WaitForSeconds(0.35f);
+        playerRb.AddForce(Vector3.down * smashForce * 5, ForceMode.Impulse);
     }
 }

@@ -15,8 +15,8 @@ public class SpawnManager : MonoBehaviour
     void Start()
     {
         SpawnEnemyWave(waveCount);
-        int randomPowerUp = Random.Range(0, powerupPrefabs.Length);
-        Instantiate(powerupPrefabs[randomPowerUp], GenerateSpawnPos(), powerupPrefabs[randomPowerUp].transform.rotation);
+        //int randomPowerUp = Random.Range(0, powerupPrefabs.Length);
+        //Instantiate(powerupPrefabs[randomPowerUp], GenerateSpawnPos(), powerupPrefabs[randomPowerUp].transform.rotation);
     }
 
     // Update is called once per frame
